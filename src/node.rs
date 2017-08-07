@@ -159,8 +159,19 @@ impl TreeNode {
             Some(ref evaled) => str.push_str(&format!("{:?}", evaled)),
             None => str.push_str("nil"),
         }
+        str.push(',');
 
-        // TODO: attributes
+        str.push_str("attributes={");
+        for attr in &self.value.attributes {
+            use node::Attribute::*;
+            match attr {
+                &String(ref k, ref v) => str.push_str(&format!("[\"{}\"]={:?};", k, v)),
+                &Number(ref k, ref v) => str.push_str(&format!("[\"{}\"]={};", k, v)),
+                &Boolean(ref k, true) => str.push_str(&format!("[\"{}\"]=true;", k)),
+                &Boolean(ref k, false) => str.push_str(&format!("[\"{}\"]=true;", k)),
+            }
+        }
+        str.push('}');
 
         str.push_str("},");
 
