@@ -52,7 +52,7 @@ pub fn read_nodes(str: &str) -> Vec<Node> {
 
                 let parent_uuid = match Uuid::parse_str(&parent_uuid_string) {
                     Ok(uuid) => uuid,
-                    Err(_) => panic!("Wrong UUID: {}", uuid_string),
+                    Err(_) => panic!("Wrong UUID: {}", parent_uuid_string),
                 };
 
                 let attributes = read_attributes(&attributes_string);
