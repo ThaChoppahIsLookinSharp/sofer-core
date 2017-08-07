@@ -58,7 +58,7 @@ pub fn read_nodes(str: &str) -> Vec<Node> {
                 let attributes = read_attributes(&attributes_string);
 
                 nodes.push(Node {
-                    content: content.clone(),
+                    content: content,
                     attributes,
                     uuid,
                     parent_uuid,
@@ -67,7 +67,7 @@ pub fn read_nodes(str: &str) -> Vec<Node> {
                 uuid_string.clear();
                 parent_uuid_string.clear();
                 attributes_string.clear();
-                content.clear();
+                content = String::new();
                 reading = 0;
             }
             Some(c) => {
