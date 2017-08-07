@@ -109,42 +109,46 @@ fn read_attributes(attributes_string: &str) -> Vec<Attribute> {
                     }
                 }
                 Some(';') => {
-                    reading = 0;
-                    let mut chars = value.chars();
-                    match chars.nth(0) {
-                        Some('"') => {
-                            attributes.push(
-                                Attribute::String(
-                                    field.clone(),
-                                    chars.filter(|&c| c != '"').collect::<String>()
-                                )
-                            );
-                        }
-                        Some('T') => {
-                            if chars.nth(1) == None {
+                    {
+                        let mut chars = value.chars();
+                        match chars.nth(0) {
+                            Some('"') => {
                                 attributes.push(
-                                    Attribute::Boolean(field.clone(), true)
-                                )
-                            } else { panic!(); }
-                        }
-                        Some('F') => {
-                            if chars.nth(1) == None {
-                                attributes.push(
-                                    Attribute::Boolean(field.clone(), false)
-                                )
-                            } else { panic!(); }
-                        }
-                        Some(_) => {
-                            match value.parse() {
-                                Ok(num) =>
-                                    attributes.push(
-                                        Attribute::Number(field.clone(), num)
-                                    ),
-                                Err(_) => panic!(),
+                                    Attribute::String(
+                                        field,
+                                        chars.filter(|&c| c != '"').collect::<String>()
+                                    )
+                                );
                             }
+                            Some('T') => {
+                                if chars.nth(1) == None {
+                                    attributes.push(
+                                        Attribute::Boolean(field, true)
+                                    )
+                                } else { panic!(); }
+                            }
+                            Some('F') => {
+                                if chars.nth(1) == None {
+                                    attributes.push(
+                                        Attribute::Boolean(field, false)
+                                    )
+                                } else { panic!(); }
+                            }
+                            Some(_) => {
+                                match value.parse() {
+                                    Ok(num) =>
+                                        attributes.push(
+                                            Attribute::Number(field, num)
+                                        ),
+                                    Err(_) => panic!(),
+                                }
+                            }
+                            None => panic!(),
                         }
-                        None => panic!(),
                     }
+                    field = String::new();
+                    value = String::new();
+                    reading = 0;
                 }
                 Some(c) => {
                     match reading {
