@@ -1,0 +1,13 @@
+[package]
+name = "sofer3"
+version = "0.1.0"
+authors = ["ElGoreLoco <esegoreloco@gmail.com>"]
+
+[profile.release]
+lto = true
+
+[dependencies]
+rlua = "^0.8"
+hlist-macro = "^0.1.0"
+uuid = { version = "0.4", features = ["serde", "v4"] }
+clap = "~2.19.0"
