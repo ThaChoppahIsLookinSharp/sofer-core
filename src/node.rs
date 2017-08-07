@@ -12,6 +12,32 @@ pub enum Attribute {
     Boolean(String, bool),
 }
 
+fn attributes_from_lua<'lua>(lua_value: rlua::LuaValue<'lua>) -> rlua::LuaResult<Vec<Attribute>> {
+    let mut attrs = Vec::new();
+    match lua_value {
+        rlua::LuaValue::Table(table) => {
+            let mut pairs = table.pairs();
+            loop {
+                match pairs.next() {
+                    Some(Ok((attr_name, rlua::LuaValue::String(str)))) =>
+                        attrs.push(Attribute::String(attr_name, String::from(str.to_str()?))),
+
+                    Some(Ok((attr_name, rlua::LuaValue::Number(x)))) =>
+                        attrs.push(Attribute::Number(attr_name, x as f32)),
+
+                    Some(Ok((attr_name, rlua::LuaValue::Boolean(b)))) =>
+                        attrs.push(Attribute::Boolean(attr_name, b)),
+
+                    None => break Ok(attrs),
+
+                    _ => (),
+                }
+            }
+        }
+        x => Err(rlua::LuaError::FromLuaConversionError(format!("Can't convert {:?} to a list of attributes", x))),
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Node {
     pub raw: String,
@@ -49,7 +75,7 @@ impl<'lua> rlua::FromLua<'lua> for Node {
                     x => return Err(rlua::LuaError::FromLuaConversionError(format!("Can't convert {:?} to String", x))),
                 };
 
-                let attributes = Vec::new(); // TODO
+                let attributes = attributes_from_lua(table.get("attributes")?)?;
 
                 Ok(Node {
                     raw,
