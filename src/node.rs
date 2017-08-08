@@ -1,6 +1,8 @@
 use rlua;
 use rlua::Lua;
 use uuid::Uuid;
+use xml::reader::{EventReader, XmlEvent};
+use xml::attribute::OwnedAttribute;
 
 use reader;
 use tree;
@@ -134,6 +136,57 @@ impl TreeNode {
         let lua = rlua::Lua::new();
         let treenode: TreeNode = lua.eval(lua_code).unwrap();
         treenode
+    }
+
+    pub fn import_from_opml(str: &str) -> TreeNode {
+        let parser = EventReader::from_str(str);
+        let mut reading = false;
+        let mut ids = vec![];
+        let mut tree = tree::Tree::new_tree(Node::new("".into(), vec![]));
+        ids.push(tree.uuid);
+        for e in parser {
+            match e {
+                Ok(XmlEvent::StartElement { name, attributes, .. }) => {
+                    if reading {
+                        let new_uuid = {
+                            let parent_uuid = ids.last().unwrap();
+                            let text = {
+                                let mut text = String::from("");
+                                for OwnedAttribute { name, value } in attributes {
+                                    if name.local_name == "text" {
+                                        text = value;
+                                        break;
+                                    }
+                                }
+                                text
+                            };
+                            let new = tree::Tree::new_child(Node::new(text, vec![]));
+                            let new_uuid = new.uuid;
+                            tree.insert(parent_uuid.clone(), new);
+                            new_uuid
+                        };
+                        ids.push(new_uuid);
+                    }
+                    if name.local_name == "body" {
+                        reading = true;
+                    }
+                }
+                Ok(XmlEvent::EndElement { name }) => {
+                    if name.local_name == "body" {
+                        reading = false;
+                    }
+                    if reading {
+                        ids.pop();
+                    }
+                }
+                Err(e) => {
+                    println!("Error: {}", e);
+                    break;
+                }
+                _ => {}
+            }
+        }
+        tree
     }
 
     pub fn export_to_sofer(&self) -> String {

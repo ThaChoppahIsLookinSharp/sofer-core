@@ -3,6 +3,7 @@ extern crate rlua;
 extern crate hlist_macro;
 extern crate uuid;
 extern crate clap;
+extern crate xml;
 
 mod config;
 mod reader;
@@ -82,6 +83,8 @@ fn main() {
     let mut treenode = match matches.value_of("from") {
         Some("lua") =>
             node::TreeNode::import_from_lua(&str),
+        Some("opml") =>
+            node::TreeNode::import_from_opml(&str),
         Some(x) =>
             panic!("Format \"{}\" not supported.", x),
         None =>

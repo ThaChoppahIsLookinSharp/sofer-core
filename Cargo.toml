@@ -11,3 +11,4 @@ rlua = "^0.8"
 hlist-macro = "^0.1.0"
 uuid = { version = "0.4", features = ["serde", "v4"] }
 clap = "~2.19.0"
+xml-rs = "0.6"
