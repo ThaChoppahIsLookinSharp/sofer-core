@@ -150,6 +150,8 @@ fn main() {
         match matches.value_of("to") {
             Some("lua") =>
                 println!("{}", treenode.export_to_lua()),
+            Some("pretty") =>
+                println!("{}", treenode.print(matches.is_present("evaled"))),
             Some(x) =>
                 println!("Format \"{}\" not supported.", x),
             None =>

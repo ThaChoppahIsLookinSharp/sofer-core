@@ -310,6 +310,30 @@ impl TreeNode {
         */
     }
 
+    pub fn print(&self, evaled: bool) -> String {
+        fn repeat(n: i32, str: String) -> String {
+            if n > 0 {
+                format!("{}{}", str.clone(), repeat(n-1, str.clone()))
+            } else {
+                String::from("")
+            }
+        }
+
+        let mut str = String::new();
+
+        for (indent, node) in self.traverse() {
+            let text = if evaled {
+                node.value.evaled.clone().unwrap_or(node.value.raw.clone())
+            } else {
+                node.value.raw.clone()
+            };
+
+            str.push_str(&format!("{}{}\n", repeat(indent, String::from("    ")), text));
+        }
+
+        str
+    }
+
     fn export_attributes(&self) -> String {
         let mut str = String::new();
 

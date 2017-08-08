@@ -113,25 +113,6 @@ impl<T> Tree<T>
         }
     }
 
-    pub fn print(&self) -> String
-        where T: std::fmt::Display {
-        fn repeat(n: i32, str: String) -> String {
-            if n > 0 {
-                format!("{}{}", str.clone(), repeat(n-1, str.clone()))
-            } else {
-                String::from("")
-            }
-        }
-
-        let mut str = String::new();
-
-        for (indent, node) in self.traverse() {
-            str.push_str(&format!("{}{}\n", repeat(indent, String::from("    ")), node.value));
-        }
-
-        str
-    }
-
     pub fn get_children(&self) -> Vec<Tree<T>> {
         match self.first_child {
             Some(ref first_child) => {
