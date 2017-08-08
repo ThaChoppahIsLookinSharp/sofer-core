@@ -38,11 +38,14 @@ fn main() {
             .takes_value(true)
             .help("Set exporting format")
         )
+        .arg(Arg::with_name("evaled")
+            .long("evaled")
+            .help("If the exporting format only allows one text, choose to export the evaled text")
+        )
         .subcommand(SubCommand::with_name("tree-node")
             .subcommand(SubCommand::with_name("eval")
                 .arg(Arg::with_name("UUID").required(true))
             )
-            .subcommand(SubCommand::with_name("eval-all"))
         )
         .subcommand(SubCommand::with_name("tree")
             .subcommand(SubCommand::with_name("insert")
@@ -93,6 +96,10 @@ fn main() {
 
     let mut export = false;
 
+    if matches.is_present("evaled") {
+        treenode.eval_all();
+    }
+
     match matches.subcommand() {
         ("tree-node", Some(sub)) => {
             match sub.subcommand() {
@@ -104,11 +111,6 @@ fn main() {
                             .expect(&format!("Couldn't find node with UUID \"{}\"", subsub.value_of("UUID").unwrap()))
                             .eval()
                         );
-                }
-                ("eval-all", Some(_)) => {
-                    treenode.eval_all();
-
-                    export = true;
                 }
                 _ => (),
             }
@@ -151,7 +153,7 @@ fn main() {
             Some(x) =>
                 println!("Format \"{}\" not supported.", x),
             None =>
-                println!("{}", treenode.export_to_sofer()),
+                println!("{}", treenode.export_to_sofer(matches.is_present("evaled"))),
         }
     }
 }

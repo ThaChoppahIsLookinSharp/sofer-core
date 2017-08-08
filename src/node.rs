@@ -189,31 +189,50 @@ impl TreeNode {
         tree
     }
 
-    pub fn export_to_sofer(&self) -> String {
-        fn to_vec(n: &TreeNode) -> Vec<(Uuid, Uuid, String, String)> {
+    pub fn export_to_sofer(&self, evaled: bool) -> String {
+        fn to_vec(n: &TreeNode, evaled: bool) -> Vec<(Uuid, Uuid, String, String)> {
             let mut treenodes = Vec::new();
-            treenodes.push((n.uuid, Uuid::nil(), n.export_attributes(), n.value.raw.clone()));
-            treenodes.append(&mut to_vec_children(&n));
+
+            let text = if evaled {
+                n.value.evaled.clone().unwrap_or(n.value.raw.clone())
+            } else {
+                n.value.raw.clone()
+            };
+
+            treenodes.push((n.uuid, Uuid::nil(), n.export_attributes(), text));
+            treenodes.append(&mut to_vec_children(&n, evaled));
 
             for sibling in n.get_siblings() {
-                treenodes.push((sibling.uuid, Uuid::nil(), sibling.export_attributes(), sibling.value.raw.clone()));
-                treenodes.append(&mut to_vec_children(&sibling));
+                let text = if evaled {
+                    sibling.value.evaled.clone().unwrap_or(sibling.value.raw.clone())
+                } else {
+                    sibling.value.raw.clone()
+                };
+
+                treenodes.push((sibling.uuid, Uuid::nil(), sibling.export_attributes(), text));
+                treenodes.append(&mut to_vec_children(&sibling, evaled));
             }
 
             treenodes
         }
 
-        fn to_vec_children(n: &TreeNode) -> Vec<(Uuid, Uuid, String, String)> {
+        fn to_vec_children(n: &TreeNode, evaled: bool) -> Vec<(Uuid, Uuid, String, String)> {
             let mut treenodes = Vec::new();
             for child in n.get_children() {
-                treenodes.push((child.uuid, n.uuid, child.export_attributes(), child.value.raw.clone()));
-                treenodes.append(&mut to_vec_children(&child));
+                let text = if evaled {
+                    child.value.evaled.clone().unwrap_or(child.value.raw.clone())
+                } else {
+                    child.value.raw.clone()
+                };
+
+                treenodes.push((child.uuid, n.uuid, child.export_attributes(), text));
+                treenodes.append(&mut to_vec_children(&child, evaled));
             }
             treenodes
         }
 
         let mut str = String::new();
-        let mut vec = to_vec(self);
+        let mut vec = to_vec(self, evaled);
         vec.sort_by_key(|k| k.0);
         vec
             .iter()
