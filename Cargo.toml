@@ -1,7 +1,7 @@
 [package]
 name = "sofer-core"
 version = "0.1.0"
-authors = ["Jorge BS <jorge.jbs@protonmail.com>"]
+authors = ["Jorge Blázquez Saborido <jorge.jbs@protonmail.com>"]
 license = "GPL-3.0"
 
 [profile.release]
