@@ -5,7 +5,6 @@ extern crate uuid;
 extern crate clap;
 extern crate xml;
 
-mod config;
 mod reader;
 mod node;
 mod tree;
