@@ -181,7 +181,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn treenode_insert() {
+    fn tree_insert() {
         let mut tree: Tree<String> = Tree::new_tree("parent".into());
 
         let first = Tree::new_child("first child".into());
@@ -197,23 +197,118 @@ mod tests {
         tree.insert(first_second.uuid, first_second_first.clone());
         tree.insert(Uuid::nil(), second.clone());
         tree.insert(second.uuid, second_first.clone());
-        println!("treenode:\n{}", tree.print());
-        println!("treenode: {:?}", tree);
         assert_eq!(
-r#"parent
-    first child
-        first first child
-        first second child
-            first second first child
-    second child
-        second first child
-"#,
-            tree.print()
+            Tree {
+                value: "parent".into(),
+                uuid: tree.uuid,
+                next_sibling: None,
+                first_child: Some(Box::new(Tree {
+                    value: "first child".into(),
+                    uuid: first.uuid,
+                    first_child: Some(Box::new(Tree {
+                        value: "first first child".into(),
+                        uuid: first_first.uuid,
+                        first_child: None,
+                        next_sibling: Some(Box::new(Tree {
+                            value: "first second child".into(),
+                            uuid: first_second.uuid,
+                            next_sibling: None,
+                            first_child: Some(Box::new(Tree {
+                                value: "first second first child".into(),
+                                uuid: first_second_first.uuid,
+                                first_child: None,
+                                next_sibling: None,
+                            })),
+                        })),
+                    })),
+                    next_sibling: Some(Box::new(Tree {
+                        value: "second child".into(),
+                        uuid: second.uuid,
+                        next_sibling: None,
+                        first_child: Some(Box::new(Tree {
+                            value: "second first child".into(),
+                            uuid: second_first.uuid,
+                            first_child: None,
+                            next_sibling: None,
+                        }))
+                    })),
+                })),
+            },
+            tree
+        )
+    }
+
+
+    #[test]
+    fn tree_find() {
+        let mut tree: Tree<String> = Tree::new_tree("parent".into());
+
+        let first = Tree::new_child("first child".into());
+        let first_first = Tree::new_child("first first child".into());
+        let first_second = Tree::new_child("first second child".into());
+        let first_second_first = Tree::new_child("first second first child".into());
+        let second = Tree::new_child("second child".into());
+        let second_first = Tree::new_child("second first child".into());
+
+        tree.insert(Uuid::nil(), first.clone());
+        tree.insert(first.uuid, first_first.clone());
+        tree.insert(first.uuid, first_second.clone());
+        tree.insert(first_second.uuid, first_second_first.clone());
+        tree.insert(Uuid::nil(), second.clone());
+        tree.insert(second.uuid, second_first.clone());
+
+        assert_eq!(tree.find(first.uuid).unwrap().value, "first child");
+        assert_eq!(tree.find(first_first.uuid).unwrap().value, "first first child");
+        assert_eq!(tree.find(first_second.uuid).unwrap().value, "first second child");
+        assert_eq!(tree.find(first_second_first.uuid).unwrap().value, "first second first child");
+        assert_eq!(tree.find(second.uuid).unwrap().value, "second child");
+        assert_eq!(tree.find(second_first.uuid).unwrap().value, "second first child");
+
+        for _ in 0..100 {
+            let uuid  = Uuid::new_v4();
+            for (_, n) in tree.traverse() {
+                if n.uuid == uuid {
+                    continue;
+                }
+            }
+            assert!(tree.find(uuid).is_none())
+        }
+    }
+
+    #[test]
+    fn traverse() {
+        let mut tree: Tree<String> = Tree::new_tree("parent".into());
+
+        let first = Tree::new_child("first child".into());
+        let first_first = Tree::new_child("first first child".into());
+        let first_second = Tree::new_child("first second child".into());
+        let first_second_first = Tree::new_child("first second first child".into());
+        let second = Tree::new_child("second child".into());
+        let second_first = Tree::new_child("second first child".into());
+
+        tree.insert(Uuid::nil(), first.clone());
+        tree.insert(first.uuid, first_first.clone());
+        tree.insert(first.uuid, first_second.clone());
+        tree.insert(first_second.uuid, first_second_first.clone());
+        tree.insert(Uuid::nil(), second.clone());
+        tree.insert(second.uuid, second_first.clone());
+
+        assert_eq!(
+            vec![
+                (0 as i32, Tree { value: "parent".into(), uuid: tree.uuid, first_child: Some(Box::new(Tree { value: "first child".into(), uuid: first.uuid, first_child: Some(Box::new(Tree { value: "first first child".into(), uuid: first_first.uuid, first_child: None, next_sibling: Some(Box::new(Tree { value: "first second child".into(), uuid: first_second.uuid, first_child: Some(Box::new(Tree { value: "first second first child".into(), uuid: first_second_first.uuid, first_child: None, next_sibling: None })), next_sibling: None })) })), next_sibling: Some(Box::new(Tree { value: "second child".into(), uuid: second.uuid, first_child: Some(Box::new(Tree { value: "second first child".into(), uuid: second_first.uuid, first_child: None, next_sibling: None })), next_sibling: None })) })), next_sibling: None }),
+                (1 as i32, Tree { value: "first child".into(), uuid: first.uuid, first_child: Some(Box::new(Tree { value: "first first child".into(), uuid: first_first.uuid, first_child: None, next_sibling: Some(Box::new(Tree { value: "first second child".into(), uuid: first_second.uuid, first_child: Some(Box::new(Tree { value: "first second first child".into(), uuid: first_second_first.uuid, first_child: None, next_sibling: None })), next_sibling: None })) })), next_sibling: Some(Box::new(Tree { value: "second child".into(), uuid: second.uuid, first_child: Some(Box::new(Tree { value: "second first child".into(), uuid: second_first.uuid, first_child: None, next_sibling: None })), next_sibling: None })) }),
+                (2 as i32, Tree { value: "first first child".into(), uuid: first_first.uuid, first_child: None, next_sibling: Some(Box::new(Tree { value: "first second child".into(), uuid: first_second.uuid, first_child: Some(Box::new(Tree { value: "first second first child".into(), uuid: first_second_first.uuid, first_child: None, next_sibling: None })), next_sibling: None })) }),
+                (2 as i32, Tree { value: "first second child".into(), uuid: first_second.uuid, first_child: Some(Box::new(Tree { value: "first second first child".into(), uuid: first_second_first.uuid, first_child: None, next_sibling: None })), next_sibling: None }),
+                (3 as i32, Tree { value: "first second first child".into(), uuid: first_second_first.uuid, first_child: None, next_sibling: None }),
+                (1 as i32, Tree { value: "second child".into(), uuid: second.uuid, first_child: Some(Box::new(Tree { value: "second first child".into(), uuid: second_first.uuid, first_child: None, next_sibling: None })), next_sibling: None }),
+                (2 as i32, Tree { value: "second first child".into(), uuid: second_first.uuid, first_child: None, next_sibling: None })
+            ],
+            tree.traverse()
         )
     }
 
     #[test]
-    fn treenode_get_siblings() {
+    fn tree_get_siblings() {
         let mut tree = Tree::new_tree("top");
         let first = Tree::new_child("first");
         let second = Tree::new_child("second");

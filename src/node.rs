@@ -7,7 +7,7 @@ use xml::attribute::OwnedAttribute;
 use reader;
 use tree;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Attribute {
     String(String, String),
     Number(String, f32),
@@ -40,7 +40,7 @@ fn attributes_from_lua<'lua>(lua_value: rlua::LuaValue<'lua>) -> rlua::LuaResult
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Node {
     pub raw: String,
     pub evaled: Option<String>,

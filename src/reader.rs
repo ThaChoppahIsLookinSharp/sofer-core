@@ -244,3 +244,174 @@ fn nodes_to_one_tree_node(nodes: &Vec<Node>, tree_node: TreeNode) -> TreeNode {
 
     tree_node
 }
+
+#[cfg(test)]
+mod tests {
+    use tree::Tree;
+    use node::Node;
+    use node::Attribute::*;
+    use uuid::Uuid;
+
+    #[test]
+    fn read_nodes() {
+        let text =
+r#"00000000-0000-0000-0000-000000000001 00000000-0000-0000-0000-000000000000 caca="fa";ñe=T;vaca=F; caca de vaca @ function(node) return tostring(node.children[1].value.raw) end
+00000000-0000-0000-0000-000000000002 00000000-0000-0000-0000-000000000000 ñe=T; Esto es lo que he dicho: @ function(node) return node.value.raw end
+00000000-0000-0000-0000-000000000003 00000000-0000-0000-0000-000000000001 ñeñe=231; Estos son los campos de este nodo: @function(node) function tabletostring(table) local str = ""   for k,v in pairs(node) do str = str .. ", " .. k .. "=" .. tostring(v) end return str end   return tabletostring(node) end
+00000000-0000-0000-0000-000000000004 00000000-0000-0000-0000-000000000001  Este también. Esto nodo tiene este número de hijos @ function(node) return #node.children end
+00000000-0000-0000-0000-000000000005 00000000-0000-0000-0000-000000000003  Este está todavía más debajo. Nodo 5. @ true
+00000000-0000-0000-0000-000000000006 00000000-0000-0000-0000-000000000003  Este está todavía más debajo. Nodo 6. @ "ñe"
+00000000-0000-0000-0000-000000000007 00000000-0000-0000-0000-000000000003  Este está todavía más debajo. Nodo 7.
+00000000-0000-0000-0000-000000000008 00000000-0000-0000-0000-000000000003  Este está todavía más debajo. Nodo 8.
+00000000-0000-0000-0000-000000000009 00000000-0000-0000-0000-000000000006  Este está todavía más debajo. Nodo 9.
+00000000-0000-0000-0000-000000000010 00000000-0000-0000-0000-000000000004  Este está todavía más debajo. Nodo 10.
+00000000-0000-0000-0000-000000000011 00000000-0000-0000-0000-000000000004  Este está todavía más debajo. Nodo 11.
+00000000-0000-0000-0000-000000000012 00000000-0000-0000-0000-000000000004  Este está todavía más debajo. Nodo 12.
+00000000-0000-0000-0000-000000000013 00000000-0000-0000-0000-000000000002  Un subnodo en el segundo nodo superior!
+00000000-0000-0000-0000-000000000014 00000000-0000-0000-0000-000000000002  Otro subnodo en el segundo nodo superior!
+"#;
+        assert_eq!(
+            super::nodes_to_tree_node(super::read_nodes(text)),
+            Tree {
+                value: Node {
+                    raw: "".into(),
+                    evaled: None,
+                    attributes: vec![],
+                },
+                uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap(),
+                first_child: Some(Box::new(Tree {
+                    value: Node {
+                        raw: "caca de vaca @ function(node) return tostring(node.children[1].value.raw) end".into(),
+                        evaled: None,
+                        attributes: vec![
+                            String("caca".into(), "fa".into()),
+                            Boolean("ñe".into(), true),
+                            Boolean("vaca".into(), false),
+                        ],
+                    },
+                    uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000001").unwrap(),
+                    first_child: Some(Box::new(Tree {
+                        value: Node {
+                            raw: "Estos son los campos de este nodo: @function(node) function tabletostring(table) local str = \"\"   for k,v in pairs(node) do str = str .. \", \" .. k .. \"=\" .. tostring(v) end return str end   return tabletostring(node) end".into(),
+                            evaled: None,
+                            attributes: vec![Number("ñeñe".into(), 231 as f32)],
+                        },
+                        uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000003").unwrap(),
+                        first_child: Some(Box::new(Tree {
+                            value: Node {
+                                raw: "Este está todavía más debajo. Nodo 5. @ true".into(),
+                                evaled: None,
+                                attributes: vec![],
+                            },
+                            uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000005").unwrap(),
+                            first_child: None,
+                            next_sibling: Some(Box::new(Tree {
+                                value: Node {
+                                    raw: "Este está todavía más debajo. Nodo 6. @ \"ñe\"".into(),
+                                    evaled: None,
+                                    attributes: vec![],
+                                },
+                                uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000006").unwrap(),
+                                first_child: Some(Box::new(Tree {
+                                    value: Node {
+                                        raw: "Este está todavía más debajo. Nodo 9.".into(),
+                                        evaled: None,
+                                        attributes: vec![],
+                                    },
+                                    uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000009").unwrap(),
+                                    first_child: None,
+                                    next_sibling: None,
+                                })),
+                                next_sibling: Some(Box::new(Tree {
+                                    value: Node {
+                                        raw: "Este está todavía más debajo. Nodo 7.".into(),
+                                        evaled: None,
+                                        attributes: vec![],
+                                    },
+                                    uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000007").unwrap(),
+                                    first_child: None,
+                                    next_sibling: Some(Box::new(Tree {
+                                        value: Node {
+                                            raw: "Este está todavía más debajo. Nodo 8.".into(),
+                                            evaled: None,
+                                            attributes: vec![],
+                                        },
+                                        uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000008").unwrap(),
+                                        first_child: None,
+                                        next_sibling: None,
+                                    })),
+                                })),
+                            })),
+                        })),
+                        next_sibling: Some(Box::new(Tree {
+                            value: Node {
+                                raw: "Este también. Esto nodo tiene este número de hijos @ function(node) return #node.children end".into(),
+                                evaled: None,
+                                attributes: vec![],
+                            },
+                            uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000004").unwrap(),
+                            first_child: Some(Box::new(Tree {
+                                value: Node {
+                                    raw: "Este está todavía más debajo. Nodo 10.".into(),
+                                    evaled: None,
+                                    attributes: vec![],
+                                },
+                                uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000010").unwrap(),
+                                first_child: None,
+                                next_sibling: Some(Box::new(Tree {
+                                    value: Node {
+                                        raw: "Este está todavía más debajo. Nodo 11.".into(),
+                                        evaled: None,
+                                        attributes: vec![],
+                                    },
+                                    uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000011").unwrap(),
+                                    first_child: None,
+                                    next_sibling: Some(Box::new(Tree {
+                                        value: Node {
+                                            raw: "Este está todavía más debajo. Nodo 12.".into(),
+                                            evaled: None,
+                                            attributes: vec![],
+                                        },
+                                        uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000012").unwrap(),
+                                        first_child: None,
+                                        next_sibling: None,
+                                    })),
+                                })),
+                            })),
+                            next_sibling: None,
+                        })),
+                    })),
+                    next_sibling: Some(Box::new(Tree {
+                        value: Node {
+                            raw: "Esto es lo que he dicho: @ function(node) return node.value.raw end".into(),
+                            evaled: None,
+                            attributes: vec![Boolean("ñe".into(), true)],
+                        },
+                        uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000002").unwrap(),
+                        first_child: Some(Box::new(Tree {
+                            value: Node {
+                                raw: "Un subnodo en el segundo nodo superior!".into(),
+                                evaled: None,
+                                attributes: vec![],
+                            },
+                            uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000013").unwrap(),
+                            first_child: None,
+                            next_sibling: Some(Box::new(Tree {
+                                value: Node {
+                                    raw: "Otro subnodo en el segundo nodo superior!".into(),
+                                    evaled: None,
+                                    attributes: vec![],
+                                },
+                                uuid: Uuid::parse_str("00000000-0000-0000-0000-000000000014").unwrap(),
+                                first_child: None,
+                                next_sibling: None,
+                            })),
+                        })),
+                        next_sibling: None,
+                    })),
+                })),
+                next_sibling: None,
+            }
+        );
+    }
+}
