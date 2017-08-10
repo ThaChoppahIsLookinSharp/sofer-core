@@ -1,5 +1,4 @@
 use rlua;
-use std;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, PartialEq)]

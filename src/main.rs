@@ -1,5 +1,4 @@
 extern crate rlua;
-#[macro_use]
 extern crate hlist_macro;
 extern crate uuid;
 extern crate clap;
