@@ -84,6 +84,25 @@ impl<T> Tree<T>
         }
     }
 
+    pub fn find_mut(&mut self, uuid: Uuid) -> Option<&mut Tree<T>> {
+        if self.uuid == uuid {
+            Some(self)
+        } else {
+            match (&mut self.first_child, &mut self.next_sibling) {
+                (&mut Some(ref mut first_child), &mut Some(ref mut next_sibling)) =>
+                    first_child.find_mut(uuid).or(next_sibling.find_mut(uuid)),
+
+                (&mut Some(ref mut first_child), &mut None) =>
+                    first_child.find_mut(uuid),
+
+                (&mut None, &mut Some(ref mut next_sibling)) =>
+                    next_sibling.find_mut(uuid),
+
+                (&mut None, &mut None) => None,
+            }
+        }
+    }
+
     pub fn traverse(&self) -> Vec<(i32, Tree<T>)> {
         let mut vec = vec![(0, self.clone())];
         let mut children = self.traverse_children();
@@ -271,6 +290,42 @@ mod tests {
                 }
             }
             assert!(tree.find(uuid).is_none())
+        }
+    }
+
+    #[test]
+    fn tree_find_mut() {
+        let mut tree: Tree<String> = Tree::new_tree("parent".into());
+
+        let first = Tree::new_child("first child".into());
+        let first_first = Tree::new_child("first first child".into());
+        let first_second = Tree::new_child("first second child".into());
+        let first_second_first = Tree::new_child("first second first child".into());
+        let second = Tree::new_child("second child".into());
+        let second_first = Tree::new_child("second first child".into());
+
+        tree.insert(Uuid::nil(), first.clone());
+        tree.insert(first.uuid, first_first.clone());
+        tree.insert(first.uuid, first_second.clone());
+        tree.insert(first_second.uuid, first_second_first.clone());
+        tree.insert(Uuid::nil(), second.clone());
+        tree.insert(second.uuid, second_first.clone());
+
+        assert_eq!(tree.find_mut(first.uuid).unwrap().value, "first child");
+        assert_eq!(tree.find_mut(first_first.uuid).unwrap().value, "first first child");
+        assert_eq!(tree.find_mut(first_second.uuid).unwrap().value, "first second child");
+        assert_eq!(tree.find_mut(first_second_first.uuid).unwrap().value, "first second first child");
+        assert_eq!(tree.find_mut(second.uuid).unwrap().value, "second child");
+        assert_eq!(tree.find_mut(second_first.uuid).unwrap().value, "second first child");
+
+        for _ in 0..100 {
+            let uuid  = Uuid::new_v4();
+            for (_, n) in tree.traverse() {
+                if n.uuid == uuid {
+                    continue;
+                }
+            }
+            assert!(tree.find_mut(uuid).is_none())
         }
     }
 
