@@ -51,6 +51,10 @@ fn main() {
                 .arg(Arg::with_name("CONTENT").required(true))
             )
             .subcommand(SubCommand::with_name("insert-to-sibling"))
+            .subcommand(SubCommand::with_name("insert-next-to")
+                .arg(Arg::with_name("UUID").required(true))
+                .arg(Arg::with_name("CONTENT").required(true))
+            )
         )
         .subcommand(SubCommand::with_name("reader")
             .subcommand(SubCommand::with_name("read"))
@@ -119,6 +123,13 @@ fn main() {
                     let uuid = Uuid::parse_str(subsub.value_of("UUID").unwrap()).expect("Couldn't read UUID");
                     let content = subsub.value_of("CONTENT").unwrap();
                     treenode.insert(uuid, Tree::new_child(Node::new(content.into(), Vec::new())));
+
+                    export = true;
+                }
+                ("insert-next-to", Some(subsub)) => {
+                    let uuid = Uuid::parse_str(subsub.value_of("UUID").unwrap()).expect("Couldn't read UUID");
+                    let content = subsub.value_of("CONTENT").unwrap();
+                    treenode.insert_next_to(uuid, Tree::new_child(Node::new(content.into(), Vec::new())));
 
                     export = true;
                 }

@@ -65,6 +65,19 @@ impl<T> Tree<T>
         }
     }
 
+    pub fn insert_next_to(&mut self, sibling_uuid: Uuid, mut new_node: Tree<T>) -> bool {
+        match self.find_mut(sibling_uuid) {
+            Some(ref mut n) => {
+                if n.next_sibling.is_some() {
+                    new_node.next_sibling = n.next_sibling.clone();
+                }
+                n.next_sibling = Some(Box::new(new_node));
+                true
+            },
+            None => false
+        }
+    }
+
     pub fn find(&self, uuid: Uuid) -> Option<&Tree<T>> {
         if self.uuid == uuid {
             Some(self)
@@ -256,6 +269,72 @@ mod tests {
         )
     }
 
+    #[test]
+    fn tree_insert_next_to() {
+        let mut tree: Tree<String> = Tree::new_tree("parent".into());
+
+        let first = Tree::new_child("first child".into());
+        let first_first = Tree::new_child("first first child".into());
+        let first_second = Tree::new_child("first second child".into());
+        let first_second_first = Tree::new_child("first second first child".into());
+        let second = Tree::new_child("second child".into());
+        let second_first = Tree::new_child("second first child".into());
+
+        tree.insert(Uuid::nil(), first.clone());
+        tree.insert(first.uuid, first_first.clone());
+        tree.insert(first.uuid, first_second.clone());
+        tree.insert(first_second.uuid, first_second_first.clone());
+        tree.insert(Uuid::nil(), second.clone());
+        tree.insert(second.uuid, second_first.clone());
+
+        let inserted_between = Tree::new_child("inserted between child".into());
+        tree.insert_next_to(first_first.uuid, inserted_between.clone());
+
+        assert_eq!(
+            Tree {
+                value: "parent".into(),
+                uuid: tree.uuid,
+                next_sibling: None,
+                first_child: Some(Box::new(Tree {
+                    value: "first child".into(),
+                    uuid: first.uuid,
+                    first_child: Some(Box::new(Tree {
+                        value: "first first child".into(),
+                        uuid: first_first.uuid,
+                        first_child: None,
+                        next_sibling: Some(Box::new(Tree {
+                            value: "inserted between child".into(),
+                            uuid: inserted_between.uuid,
+                            first_child: None,
+                            next_sibling: Some(Box::new(Tree {
+                                value: "first second child".into(),
+                                uuid: first_second.uuid,
+                                next_sibling: None,
+                                first_child: Some(Box::new(Tree {
+                                    value: "first second first child".into(),
+                                    uuid: first_second_first.uuid,
+                                    first_child: None,
+                                    next_sibling: None,
+                                })),
+                            })),
+                        })),
+                    })),
+                    next_sibling: Some(Box::new(Tree {
+                        value: "second child".into(),
+                        uuid: second.uuid,
+                        next_sibling: None,
+                        first_child: Some(Box::new(Tree {
+                            value: "second first child".into(),
+                            uuid: second_first.uuid,
+                            first_child: None,
+                            next_sibling: None,
+                        }))
+                    })),
+                })),
+            },
+            tree
+        )
+    }
 
     #[test]
     fn tree_find() {
